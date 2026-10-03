@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PV Inventory Recon Tracker</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/styles.css">
+</head><body>
+<header><h1>PV INVENTORY RECON TRACKER</h1><p>Stock report vs physical audit preview: variance identification</p></header>
+<main>
+<div class="priv">All files are read and matched inside this browser tab. Nothing is uploaded or sent to any server.</div>
+<section class="up">
+ <div class="card"><h2>Specific Substore Stock Report (Excel)</h2>
+  <div class="drop" id="dz1"><p>Drag and drop the .xlsx / .xls file here</p><button class="btn" id="b1" type="button">Select Excel File</button><input id="f1" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div><div id="i1"></div></div>
+ <div class="card"><h2>PV / Audit Preview Report (PDF)</h2>
+  <div class="drop" id="dz2"><p>Drag and drop the .pdf file here</p><button class="btn" id="b2" type="button">Select PDF File</button><input id="f2" type="file" accept=".pdf" hidden></div><div id="i2"></div></div>
+</section>
+<div class="act"><button class="btn p" id="match" disabled>MATCH REPORTS</button><button class="btn p" id="dl" disabled>DOWNLOAD VARIANCE EXCEL</button><button class="btn" id="clr">Clear All Data</button></div>
+<div id="prog" aria-live="polite"><div id="pl" style="margin-bottom:4px"></div><div class="bar"><i id="pb"></i></div></div>
+<section id="res">
+ <div class="cards" id="cards"></div>
+ <div class="flt">
+  <div class="seg" role="group" aria-label="View"><button id="vv" class="on">Variance only</button><button id="va">All records</button></div>
+  <label>Search<input id="q" placeholder="code, serial, description..."></label>
+  <label>Status<select id="fs"></select></label>
+  <label>Match type<select id="ft"><option value="">All</option><option value="SR">SR / Serial</option><option value="NON-SR">Non-SR / Quantity</option></select></label>
+  <label>Item code<input id="fc" placeholder="Item code"></label>
+  <label>Serial number<input id="fn" placeholder="Serial"></label>
+  <label>Item quality<select id="fq"></select></label>
+  <label>Inventory status<select id="fi"></select></label>
+ </div>
+ <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+ <div class="pg"><span id="pc"></span><span><select id="ps" aria-label="Rows per page"><option>50</option><option selected>100</option><option>250</option></select> <button class="btn" id="pp">Previous</button> <span id="pn"></span> <button class="btn" id="pnx">Next</button></span></div>
+ <div class="info card" id="proc"></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/export.js"></script>
+</body></html>
