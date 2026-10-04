@@ -5,38 +5,50 @@
 <link rel="stylesheet" href="css/styles.css">
 </head><body>
 <header class="top"><div class="wrap top-in">
- <div class="brand"><svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0b6e83"/><path d="M8 10h16M8 16h16M8 22h9" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="22" r="3" fill="#7fe0b0"/></svg>
-  <div><h1>PV Inventory Recon</h1><p>Stock report vs physical audit</p></div></div>
- <span class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Runs in your browser. Nothing is uploaded.</span>
+ <div class="brand"><svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0b6a7c"/><path d="M8 10h16M8 16h16M8 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+  <div><h1>PV Inventory Recon</h1><p>Compare stock vs. audit reports</p></div></div>
+ <span class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Your files stay on your device<i class="dot"></i></span>
 </div></header>
 <main class="wrap">
- <h2 class="sec">Add the two reports</h2>
  <section class="up">
-  <div class="card up-card" id="c1"><div class="uh"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 3h9l5 5v13H5z"/><path d="M9 13l6 6M15 13l-6 6"/></svg></span><div><h3>Stock report</h3><p>Specific Substore Stock Report, Excel</p></div></div>
-   <div class="drop" id="dz1"><span>Drop the file here or</span><button class="btn" id="b1" type="button">Choose Excel file</button><input id="f1" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div><div id="i1"></div></div>
-  <div class="card up-card" id="c2"><div class="uh"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 3h9l5 5v13H5z"/><path d="M14 3v5h5M8 14h8M8 18h6"/></svg></span><div><h3>Audit report</h3><p>PV / Audit Preview from i360, PDF</p></div></div>
-   <div class="drop" id="dz2"><span>Drop the file here or</span><button class="btn" id="b2" type="button">Choose PDF file</button><input id="f2" type="file" accept=".pdf" hidden></div><div id="i2"></div></div>
+  <div class="card up-card"><div class="uh"><span id="ft1"></span><div><h3>Stock report</h3><p>Specific Substore Stock Report (Excel)</p></div></div>
+   <div class="drop" id="dz1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 .5 9.5"/><path d="M12 12v8M9 15l3-3 3 3"/></svg><span>Drop file here or</span><button class="btn" id="b1" type="button">Choose Excel file</button><input id="f1" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div><div id="i1"></div></div>
+  <div class="card up-card"><div class="uh"><span id="ft2"></span><div><h3>Audit report</h3><p>PV Audit Preview Report (PDF)</p></div></div>
+   <div class="drop" id="dz2"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 .5 9.5"/><path d="M12 12v8M9 15l3-3 3 3"/></svg><span>Drop file here or</span><button class="btn" id="b2" type="button">Choose PDF file</button><input id="f2" type="file" accept=".pdf" hidden></div><div id="i2"></div></div>
  </section>
- <div class="act"><button class="btn p" id="match" disabled>Match reports</button><button class="btn p2" id="dl" disabled>Download variance Excel</button><button class="btn ghost" id="clr">Clear all data</button></div>
+ <div class="act">
+  <button class="btn p" id="match" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-4L4 9M4 4v5h5M4 13a8 8 0 0 0 14 4l2-2M20 20v-5h-5"/></svg>Match reports</button>
+  <button class="btn" id="dl" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Download variance Excel</button>
+  <button class="btn ghost" id="clr">Clear all data</button>
+ </div>
  <div id="prog" aria-live="polite"><div id="pl"></div><div class="bar"><i id="pb"></i></div></div>
  <section id="res">
-  <div id="verdict"></div>
-  <div class="totals" id="totals"></div>
-  <div class="tabs" id="tabs" role="tablist" aria-label="Result groups"></div>
-  <div class="tools">
-   <input id="q" type="search" placeholder="Search item code, serial or description" aria-label="Search">
-   <label class="sortl">Sort<select id="fsort"><option value="rank:1">Default</option><option value="code:1">Item code</option><option value="var:1">Largest shortage first</option><option value="var:-1">Largest excess first</option></select></label>
-   <button class="btn sm" id="ftog" type="button" aria-expanded="false">Filters</button>
+  <div class="card recon">
+   <div class="rh"><div><h2>Reconciliation Summary</h2><p>Overall match status between stock and audit reports</p></div>
+    <div class="rp"><div class="pbar"><i id="rbar"></i></div><div class="pt"><b id="rcnt"></b><span id="rpct"></span></div></div></div>
+   <div class="kpis" id="kpis"></div>
   </div>
-  <div class="flt" id="fl" hidden>
-   <label>Type<select id="ft"><option value="">All</option><option value="SR">Serialised</option><option value="NON-SR">Quantity</option></select></label>
-   <label>Item code<input id="fc" placeholder="Item code"></label>
-   <label>Serial number<input id="fn" placeholder="Serial"></label>
-   <label>Quality<select id="fq"></select></label>
-   <label>Inventory status<select id="fi"></select></label>
+  <div class="card strip" id="strip"></div>
+  <div class="card tcard">
+   <div class="trow">
+    <div class="tabs" id="tabs" role="tablist" aria-label="Result groups"></div>
+    <div class="tr">
+     <label class="sw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" type="search" placeholder="Search item code, description, serial no..." aria-label="Search"></label>
+     <select id="fs" aria-label="Status"></select>
+     <button class="btn sm" id="ftog" type="button" aria-expanded="false">Filters</button>
+    </div>
+   </div>
+   <div class="flt" id="fl" hidden>
+    <label>Type<select id="ft"><option value="">All</option><option value="SR">Serialised</option><option value="NON-SR">Quantity</option></select></label>
+    <label>Item code<input id="fc" placeholder="Item code"></label>
+    <label>Serial number<input id="fn" placeholder="Serial"></label>
+    <label>Quality<select id="fq"></select></label>
+    <label>Inventory status<select id="fi"></select></label>
+    <label>Sort<select id="fsort"><option value="rank:1">Default</option><option value="code:1">Item code</option><option value="var:1">Largest shortage first</option><option value="var:-1">Largest excess first</option></select></label>
+   </div>
+   <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+   <div class="pg"><span id="pc"></span><span class="pgc"><select id="ps" aria-label="Rows per page"><option>50</option><option selected>100</option><option>250</option></select><button class="btn sm" id="pp">Previous</button><span id="pn"></span><button class="btn sm" id="pnx">Next</button></span></div>
   </div>
-  <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
-  <div class="pg"><span id="pc"></span><span class="pgc"><select id="ps" aria-label="Rows per page"><option>50</option><option selected>100</option><option>250</option></select><button class="btn sm" id="pp">Previous</button><span id="pn"></span><button class="btn sm" id="pnx">Next</button></span></div>
   <div class="card" id="proc"></div>
  </section>
 </main>
