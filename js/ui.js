@@ -35,11 +35,11 @@ async function loadStock(file){S.stock=null;reset();ready();info('#i1','x',file.
  chk();ready()}
 async function loadAudit(file){S.audit=null;reset();ready();info('#i2','p',file.name,'busy','Reading...',[],[]);await tick();
  try{libs();pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const doc=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;let raw=[],head='';
-  for(let n=1;n<=doc.numPages;n++){const t=await(await doc.getPage(n)).getTextContent(),it=t.items.filter(i=>i.str.trim()).map(i=>({x:i.transform[4],y:i.transform[5],s:i.str.trim()}));
-   if(n===1)head=it.map(i=>i.s).join(' ');raw.push(...pageRows(it));info('#i2','p',file.name,'busy','Reading page '+n+' of '+doc.numPages+'...',[],[]);if(n%3===0)await tick()}
-  if(!raw.length)throw new Error('PDF was loaded, but no audit records could be detected.');
-  const recs=auditFromRaw(raw),ok=recs.filter(r=>!r.bad),mm=head.match(/Substore Name\s*:\s*(\S+)/i),au={file:file.name,size:file.size,pages:doc.numPages,recs,sub:mm?mm[1]:''};S.audit=au;
+  const doc=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;let pg=[],head='';
+  for(let n=1;n<=doc.numPages;n++){const t=await(await doc.getPage(n)).getTextContent(),it=t.items.filter(i=>i.str.trim()).map(i=>({x:i.transform[4],y:i.transform[5],w:i.width||0,s:i.str.trim()}));
+   if(n===1)head=it.map(i=>i.s).join(' ');pg.push(it);info('#i2','p',file.name,'busy','Reading page '+n+' of '+doc.numPages+'...',[],[]);if(n%3===0)await tick()}
+  const recs=auditFromPages(pg);if(!recs.length)throw new Error('PDF was loaded, but no audit records could be detected.');
+  const ok=recs.filter(r=>!r.bad),mm=head.match(/Substore Name\s*:\s*(\S+)/i),au={file:file.name,size:file.size,pages:doc.numPages,recs,sub:mm?mm[1]:''};S.audit=au;
   const sr=ok.filter(r=>r.srType==='SR').length,m=[],bad=recs.length-ok.length,mx=Math.max(...recs.map(r=>r.auditNo)),seq=new Set(recs.map(r=>r.auditNo)).size;
   if(bad)m.push(['w',bad+' audit records have parsing issues (see Other issues after matching).']);
   if(mx!==recs.length||seq!==recs.length)m.push(['w','Parsed '+recs.length+' records but highest S.No is '+mx+'. Some rows may not have been detected.']);

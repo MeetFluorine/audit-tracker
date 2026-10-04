@@ -4,18 +4,46 @@ const norm=v=>String(v==null?'':v).normalize('NFKC').replace(/[\u200B-\u200D\u20
 const hasSer=s=>!NOSER.has(s);
 // Rebuild logical audit rows from positioned PDF text. Rows are vertically centred on the S.No, so every
 // text item is assigned to the nearest S.No; columns are identified by x position (layout of the i360 report).
-function pageRows(items){
- const sn=items.filter(i=>i.x<62&&/^\d{1,5}$/.test(i.s)),snSet=new Set(sn);
+// Column centres read from the report's own header row, so the parser adapts to any page width / zoom the i360 PDF was
+// printed at. Returns null when the header row is not on the page (then the fixed legacy positions are used).
+function colLayout(items){
+ const by=s=>items.filter(i=>i.s===s),w=i=>i.w||0,mid=i=>i.x+w(i)/2,span=(a,b)=>(Math.min(a.x,b.x)+Math.max(a.x+w(a),b.x+w(b)))/2;
+ const q=by('Quantity')[0];if(!q)return null;
+ const band=a=>a.filter(i=>Math.abs(i.y-q.y)<35),one=s=>band(by(s))[0],lft=(s,r)=>r&&band(by(s)).filter(i=>i.x<r.x).sort((x,y)=>y.x-x.x)[0];
+ const no=band(by('No')).filter(i=>i.x<100)[0],aud=one('Audit'),dat=one('Date'),dsc=one('Description'),mod=one('Model'),ser=one('Serial'),num=one('Number'),cod=one('Code'),non=one('Non'),qual=one('Quality'),uom=one('UOM'),prod=one('Product'),cat=one('category');
+ const dI=lft('Item',dsc),cI=lft('Item',cod);
+ if(![no,aud,dat,dsc,dI,mod,ser,num,cod,cI,non,qual,uom,prod,cat].every(Boolean))return null;
+ const c=[mid(no),span(aud,dat),span(dI,dsc),mid(mod),span(ser,num),span(cI,cod),mid(non),mid(q),mid(qual),mid(uom),span(prod,cat)];
+ for(let k=1;k<c.length;k++)if(!(c[k]>c[k-1]))return null;
+ return{c,modelLeft:mod.x}}
+// Rebuild logical audit rows from positioned PDF text. Rows are vertically centred on the S.No, so every
+// text item is assigned to the nearest S.No; columns are identified by x position (header-based layout, or the legacy fixed layout).
+function pageRows(items,L){
+ const w=i=>i.w||0,cx=i=>i.x+w(i)/2,hq=items.find(i=>i.s==='Quantity'),top=L&&hq?hq.y-20:1e9,snX=L?(L.c[0]+L.c[1])/2:62;
+ const sn=items.filter(i=>(L?cx(i)<snX:i.x<62)&&/^\d{1,5}$/.test(i.s)&&i.y<top),snSet=new Set(sn);
  const rows=sn.map(i=>({no:+i.s,y:i.y,c:{dt:[],d:[],m:[],s:[],k:[],t:[],q:[],l:[],u:[],p:[]}}));
- for(const i of items){if(snSet.has(i)||i.x<62)continue;let b=null,bd=1e9;
+ const NM=['sn','dt','d','m','s','k','t','q','l','u','p'];
+ const colOf=i=>{if(!L){const x=i.x;return x<100?'dt':x<560?'d':x<588?'m':x<700?'s':x<770?'k':x<815?'t':x<860?'q':x<895?'l':x<920?'u':'p'}
+  const c=L.c;if(i.x+w(i)<c[1]+(c[2]-c[1])*0.1)return'dt';
+  let k=2;while(k<10&&cx(i)>=(c[k]+c[k+1])/2)k++;
+  if(k===3&&i.x+w(i)<L.modelLeft)k=2;return NM[k]};
+ for(const i of items){if(snSet.has(i)||(L?(cx(i)<snX||i.y>=top):i.x<62))continue;let b=null,bd=1e9;
   for(const r of rows){const d=Math.abs(r.y-i.y);if(d<bd){bd=d;b=r}}
-  if(!b||bd>20)continue;const x=i.x;
-  b.c[x<100?'dt':x<560?'d':x<588?'m':x<700?'s':x<770?'k':x<815?'t':x<860?'q':x<895?'l':x<920?'u':'p'].push(i)}
+  if(!b||bd>(L?28:20))continue;
+  b.c[colOf(i)].push(i)}
  return rows.map(r=>{const j=(a,v)=>a.sort((p,q)=>v?(q.y-p.y||p.x-q.x):p.x-q.x).map(i=>i.s).join(' ').trim(),c=r.c;
   return{auditNo:r.no,date:j(c.dt,1),desc:j(c.d,1),model:j(c.m),serial:j(c.s),code:j(c.k),type:j(c.t),qty:j(c.q),quality:j(c.l),uom:j(c.u),cat:j(c.p,1)}})}
 function auditFromRaw(raw){return raw.map(r=>{const t=r.type.replace(/\s+/g,' ').toUpperCase(),sr=t==='SR'?'SR':t==='NON SR'?'NON-SR':'',ser=norm(r.serial),code=norm(r.code),q=parseFloat(r.qty.replace(/,/g,''));
  const bad=!sr?'Unrecognised SR / Non SR value "'+r.type+'"':(!code||code==='-')?'Missing Item Code':isNaN(q)?'Invalid quantity "'+r.qty+'"':(sr==='SR'&&!hasSer(ser))?'SR record without serial number':'';
  return{auditNo:r.auditNo,auditDate:r.date,itemDescription:r.desc,serialNumber:hasSer(ser)?ser:'',itemCode:code,srType:sr,quantity:isNaN(q)?0:q,quality:r.quality,uom:r.uom,productCategory:r.cat,bad}})}
+// pages = array of positioned text items per PDF page. Uses the header-based column layout; the legacy fixed layout is
+// kept as a fallback and is preferred only when it reads the file with fewer parsing issues than the header-based one.
+function auditFromPages(pages){
+ let L=null;for(const p of pages){L=colLayout(p);if(L)break}
+ const run=l=>auditFromRaw([].concat(...pages.map(p=>pageRows(p,l)))),legacy=run(null);
+ if(!L)return legacy;
+ const hdr=run(L),bad=r=>r.filter(x=>x.bad).length;
+ return bad(hdr)<bad(legacy)?hdr:legacy}
 function stockFromWb(wb){
  const key=h=>String(h).toLowerCase().replace(/[^a-z0-9]/g,'');
  const A={itemCode:['itemcode'],itemQty:['itemqnty','itemqty','itemquantity'],itemSNo:['itemsno','itemserialno','itemserialnumber','serialnumber','serialno'],itemDescription:['itemdescription'],inventoryStatus:['inventorystatus'],itemQuality:['itemquality'],itemUom:['itemuom'],itemLotNo:['itemlotno'],location:['location'],sub:['substorename']};
