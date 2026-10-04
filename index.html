@@ -1,36 +1,44 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PV Inventory Recon Tracker</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/styles.css">
 </head><body>
-<header><h1>PV INVENTORY RECON TRACKER</h1><p>Stock report vs physical audit preview: variance identification</p></header>
-<main>
-<div class="priv">All files are read and matched inside this browser tab. Nothing is uploaded or sent to any server.</div>
-<section class="up">
- <div class="card"><h2>Specific Substore Stock Report (Excel)</h2>
-  <div class="drop" id="dz1"><p>Drag and drop the .xlsx / .xls file here</p><button class="btn" id="b1" type="button">Select Excel File</button><input id="f1" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div><div id="i1"></div></div>
- <div class="card"><h2>PV / Audit Preview Report (PDF)</h2>
-  <div class="drop" id="dz2"><p>Drag and drop the .pdf file here</p><button class="btn" id="b2" type="button">Select PDF File</button><input id="f2" type="file" accept=".pdf" hidden></div><div id="i2"></div></div>
-</section>
-<div class="act"><button class="btn p" id="match" disabled>MATCH REPORTS</button><button class="btn p" id="dl" disabled>DOWNLOAD VARIANCE EXCEL</button><button class="btn" id="clr">Clear All Data</button></div>
-<div id="prog" aria-live="polite"><div id="pl" style="margin-bottom:4px"></div><div class="bar"><i id="pb"></i></div></div>
-<section id="res">
- <div class="cards" id="cards"></div>
- <div class="flt">
-  <div class="seg" role="group" aria-label="View"><button id="vv" class="on">Variance only</button><button id="va">All records</button></div>
-  <label>Search<input id="q" placeholder="code, serial, description..."></label>
-  <label>Status<select id="fs"></select></label>
-  <label>Match type<select id="ft"><option value="">All</option><option value="SR">SR / Serial</option><option value="NON-SR">Non-SR / Quantity</option></select></label>
-  <label>Item code<input id="fc" placeholder="Item code"></label>
-  <label>Serial number<input id="fn" placeholder="Serial"></label>
-  <label>Item quality<select id="fq"></select></label>
-  <label>Inventory status<select id="fi"></select></label>
- </div>
- <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
- <div class="pg"><span id="pc"></span><span><select id="ps" aria-label="Rows per page"><option>50</option><option selected>100</option><option>250</option></select> <button class="btn" id="pp">Previous</button> <span id="pn"></span> <button class="btn" id="pnx">Next</button></span></div>
- <div class="info card" id="proc"></div>
-</section>
+<header class="top"><div class="wrap top-in">
+ <div class="brand"><svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0b6e83"/><path d="M8 10h16M8 16h16M8 22h9" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="22" r="3" fill="#7fe0b0"/></svg>
+  <div><h1>PV Inventory Recon</h1><p>Stock report vs physical audit</p></div></div>
+ <span class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Runs in your browser. Nothing is uploaded.</span>
+</div></header>
+<main class="wrap">
+ <h2 class="sec">Add the two reports</h2>
+ <section class="up">
+  <div class="card up-card" id="c1"><div class="uh"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 3h9l5 5v13H5z"/><path d="M9 13l6 6M15 13l-6 6"/></svg></span><div><h3>Stock report</h3><p>Specific Substore Stock Report, Excel</p></div></div>
+   <div class="drop" id="dz1"><span>Drop the file here or</span><button class="btn" id="b1" type="button">Choose Excel file</button><input id="f1" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div><div id="i1"></div></div>
+  <div class="card up-card" id="c2"><div class="uh"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 3h9l5 5v13H5z"/><path d="M14 3v5h5M8 14h8M8 18h6"/></svg></span><div><h3>Audit report</h3><p>PV / Audit Preview from i360, PDF</p></div></div>
+   <div class="drop" id="dz2"><span>Drop the file here or</span><button class="btn" id="b2" type="button">Choose PDF file</button><input id="f2" type="file" accept=".pdf" hidden></div><div id="i2"></div></div>
+ </section>
+ <div class="act"><button class="btn p" id="match" disabled>Match reports</button><button class="btn p2" id="dl" disabled>Download variance Excel</button><button class="btn ghost" id="clr">Clear all data</button></div>
+ <div id="prog" aria-live="polite"><div id="pl"></div><div class="bar"><i id="pb"></i></div></div>
+ <section id="res">
+  <div id="verdict"></div>
+  <div class="totals" id="totals"></div>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Result groups"></div>
+  <div class="tools">
+   <input id="q" type="search" placeholder="Search item code, serial or description" aria-label="Search">
+   <label class="sortl">Sort<select id="fsort"><option value="rank:1">Default</option><option value="code:1">Item code</option><option value="var:1">Largest shortage first</option><option value="var:-1">Largest excess first</option></select></label>
+   <button class="btn sm" id="ftog" type="button" aria-expanded="false">Filters</button>
+  </div>
+  <div class="flt" id="fl" hidden>
+   <label>Type<select id="ft"><option value="">All</option><option value="SR">Serialised</option><option value="NON-SR">Quantity</option></select></label>
+   <label>Item code<input id="fc" placeholder="Item code"></label>
+   <label>Serial number<input id="fn" placeholder="Serial"></label>
+   <label>Quality<select id="fq"></select></label>
+   <label>Inventory status<select id="fi"></select></label>
+  </div>
+  <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+  <div class="pg"><span id="pc"></span><span class="pgc"><select id="ps" aria-label="Rows per page"><option>50</option><option selected>100</option><option>250</option></select><button class="btn sm" id="pp">Previous</button><span id="pn"></span><button class="btn sm" id="pnx">Next</button></span></div>
+  <div class="card" id="proc"></div>
+ </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
